@@ -1,0 +1,86 @@
+[tool.poetry]
+name = "sportify-auth"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.6"
+sqlalchemy = "^2.0.37"
+alembic = "^1.14.0"
+uvicorn = "^0.34.0"
+asyncpg = "^0.30.0"
+pydantic-settings = "^2.7.1"
+pytz = "^2024.2"
+pyjwt = "^2.10.1"
+greenlet = "^3.1.1"
+redis = "^5.2.1"
+aiohttp = "^3.11.12"
+aiokafka = "^0.12.0"
+cryptography = "^45.0.2"
+pytest = "^8.4.0"
+pytest-asyncio = "^1.0.0"
+taskiq-redis = "^1.0.9"
+aiofiles = "^24.1.0"
+gunicorn = "^23.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+
+force-exclude = true
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+extend-exclude = ["src/infrastruction/db/migrations/env.py"]
+
+line-length = 90
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.lint]
+
+select = ["E4", "E7", "E9", "F"]
+ignore = []
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+
+quote-style = "double"
+indent-style = "tab"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"

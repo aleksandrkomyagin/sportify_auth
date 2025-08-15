@@ -1,0 +1,137 @@
+volumes:
+  redis_volume:
+  postgres_data:
+  pgadmin-data:
+  static_volume:
+
+
+services:
+  redis:
+    image: redis:7.0.1-alpine
+    container_name: sportify_auth_service_redis
+    restart: always
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - redis_volume:/data
+    networks:
+      - sportify
+
+  db:
+    image: postgres:15.2-alpine
+    container_name: sportify_auth_service_db
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - sportify
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    restart: always
+    ports:
+      - "${PGADMIN_EXTERNAL_PORT}:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: ${PGADMIN_CONFIG_SERVER_MODE}
+    volumes:
+      - ./pgadmin/servers.json:/pgadmin4/servers.json
+      - pgadmin-data:/var/lib/pgadmin
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - sportify
+
+  api:
+    container_name: sportify_auth_service_api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    develop:
+      watch:
+        - action: sync+restart
+          path: sportify_auth
+          target: /app/sportify_auth
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/api/v1/service/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - ./src/sportify_auth/infrastructure/db/sqlalchemy/migrations:/app/sportify_auth/infrastructure/db/sqlalchemy/migrations
+      - static_volume:/app/sportify_auth/static
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - sportify
+
+  task_scheduler:
+    build: .
+    container_name: sportify_task_scheduler
+    env_file:
+      - .env
+    command:
+        - sh
+        - -c
+        - "taskiq scheduler -fsd --skip-first-run 
+          sportify_auth.infrastructure.task_manager.task_iq:scheduler"
+    depends_on:
+        api:
+          condition: service_healthy
+    networks:
+      - sportify
+
+  task_worker:
+    build: .
+    container_name: sportify_task_worker
+    env_file:
+      - .env
+    command:
+        - sh
+        - -c
+        - "taskiq worker -fsd sportify_auth.infrastructure.task_manager.task_iq:broker -w '1'
+          -tp sportify_auth.infrastructure.task_manager.task_iq"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - sportify
+
+  nginx:
+    image: nginx:1.29.0-alpine-slim
+    container_name: sportify_auth_nginx
+    restart: always
+    volumes:
+      - ./gateway/nginx/default-local.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/app/sportify_auth/static
+    ports:
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - sportify
+
+
+networks:
+  sportify:
+    external: true
