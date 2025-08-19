@@ -1,7 +1,10 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from sportify_auth.application.protocols.repositories.user.types import UpdateUserData, UserData
+from sportify_auth.application.protocols.repositories.user.types import (
+	UpdateUserData,
+	UserData,
+)
 from sportify_auth.domain.entities import User
 from sportify_auth.domain.value_objects import UserUUID
 
@@ -28,6 +31,6 @@ class IUserRepository(Protocol):
 		self,
 		user_id: str,
 		user_data: UpdateUserData,
-		status_history: list[dict] | None = None
+		status_history: list[dict] | None = None,
 	) -> UserUUID:
 		raise NotImplementedError

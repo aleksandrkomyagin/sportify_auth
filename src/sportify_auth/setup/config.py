@@ -1,8 +1,8 @@
 import os
+
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -16,9 +16,7 @@ class APIConfig(BaseSettings):
 	name_service: str
 	workers: int = os.cpu_count()
 
-	model_config = SettingsConfigDict(
-		env_file=".env", env_prefix="API_", extra="ignore"
-	)
+	model_config = SettingsConfigDict(env_file=".env", env_prefix="API_", extra="ignore")
 
 
 class SecurityConfig(BaseSettings):
@@ -26,9 +24,7 @@ class SecurityConfig(BaseSettings):
 	issuer: str
 	secret_key: str
 
-	model_config = SettingsConfigDict(
-		env_file=".env", env_prefix="SECURITY_", extra="ignore"
-	)
+	model_config = SettingsConfigDict(env_file=".env", env_prefix="SECURITY_", extra="ignore")
 
 
 class PostgresConfig(BaseSettings):
@@ -38,9 +34,7 @@ class PostgresConfig(BaseSettings):
 	password: str
 	port: str
 
-	model_config = SettingsConfigDict(
-		env_file=".env", env_prefix="POSTGRES_", extra="ignore"
-	)
+	model_config = SettingsConfigDict(env_file=".env", env_prefix="POSTGRES_", extra="ignore")
 
 	# @property
 	def connection_string(self) -> str:
@@ -64,9 +58,7 @@ class RedisDatabase(BaseSettings):
 	revoked_token_db: str
 	tasks_db: str
 
-	model_config = SettingsConfigDict(
-		env_file=".env", env_prefix="REDIS_", extra="ignore"
-	)
+	model_config = SettingsConfigDict(env_file=".env", env_prefix="REDIS_", extra="ignore")
 
 
 class TokenConfig(BaseSettings):
@@ -75,18 +67,14 @@ class TokenConfig(BaseSettings):
 	expiration_time: int = 3600
 	jwks_file_path: str = str(BASE_DIR / "static/.well-known/jwks.json")
 
-	model_config = SettingsConfigDict(
-		env_file=".env", env_prefix="TOKEN_", extra="ignore"
-	)
+	model_config = SettingsConfigDict(env_file=".env", env_prefix="TOKEN_", extra="ignore")
 
 
 class Kafka(BaseSettings):
 	server: str
 	consumer_topics: str
 
-	model_config = SettingsConfigDict(
-		env_file=".env", env_prefix="KAFKA_", extra="ignore"
-	)
+	model_config = SettingsConfigDict(env_file=".env", env_prefix="KAFKA_", extra="ignore")
 
 
 class Settings(BaseSettings):

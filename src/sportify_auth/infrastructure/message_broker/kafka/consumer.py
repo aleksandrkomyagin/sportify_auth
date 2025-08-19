@@ -1,5 +1,6 @@
 import asyncio
 import json
+
 from functools import lru_cache
 from logging import getLogger
 from typing import Any, Callable
@@ -9,7 +10,9 @@ from aiokafka.errors import KafkaError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from sportify_auth.application.protocols.message_broker import IMessageConsumer
-from sportify_auth.infrastructure.db.sqlalchemy.repositories import SQLAlchemyUserRepository
+from sportify_auth.infrastructure.db.sqlalchemy.repositories import (
+	SQLAlchemyUserRepository,
+)
 from sportify_auth.infrastructure.exceptions.message_broker.kafka import (
 	StartConsumerException,
 	StopConsumerException,
@@ -57,9 +60,7 @@ class KafkaMessageConsumer(IMessageConsumer):
 		except KafkaError as e:
 			logger.error("Ошибка при старте консюмера: %s", str(e))
 			await self._consumer.stop()
-			raise StartConsumerException(
-				message="Ошибка при старте консюмера"
-			) from e
+			raise StartConsumerException(message="Ошибка при старте консюмера") from e
 
 	async def stop(self):
 		try:
@@ -70,9 +71,7 @@ class KafkaMessageConsumer(IMessageConsumer):
 				await self._consumer.stop()
 		except KafkaError as e:
 			logger.error("Ошибка при остановке консюмера: %s", str(e))
-			raise StopConsumerException(
-				message="Ошибка при остановке консюмера"
-			) from e
+			raise StopConsumerException(message="Ошибка при остановке консюмера") from e
 
 	async def _consume_loop(self):
 		try:
@@ -92,21 +91,18 @@ class KafkaMessageConsumer(IMessageConsumer):
 										logger.error(
 											"Во время обработки сообщения (offset: %s) произошла ошибка: %s",
 											msg.offset,
-											str(e)
+											str(e),
 										)
 								await asyncio.sleep(0.5)
 						else:
 							logger.info("Нет обработчика для %s", tp.topic)
 						await self._consumer.commit({tp: messages[-1].offset + 1})
 		except KafkaError as e:
-			logger.error(
-				"Во время работы консьюмера произошла ошибка: %s", e, exc_info=True
-			)
+			logger.error("Во время работы консьюмера произошла ошибка: %s", e, exc_info=True)
 			logger.warning("Перезапуск консьюмера через 5 секунд")
 			await self.stop()
 			await asyncio.sleep(5)
 			await self.start(session_maker=self._session_maker)
-
 
 
 @lru_cache

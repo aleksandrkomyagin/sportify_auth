@@ -1,4 +1,5 @@
 import uuid
+
 from datetime import datetime
 from enum import Enum
 
@@ -15,9 +16,7 @@ class Status(Enum):
 
 
 class UserStatusHistory(BaseModel):
-	id: Mapped[UUID] = mapped_column(
-		UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-	)
+	id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 	user_id: Mapped[UUID] = mapped_column(
 		UUID(as_uuid=True),
 		ForeignKey("users.id", ondelete="CASCADE"),
@@ -36,12 +35,17 @@ class UserStatusHistory(BaseModel):
 
 class User(BaseModel):
 	id: Mapped[UUID] = mapped_column(
-		UUID(as_uuid=True), primary_key=True, unique=True, nullable=False
+		UUID(as_uuid=True),
+		primary_key=True,
+		unique=True,
+		nullable=False,
+		index=True,
 	)
 	phone: Mapped[str] = mapped_column(
 		String(11),
 		unique=True,
 		nullable=False,
+		index=True,
 	)
 	created_at: Mapped[datetime] = mapped_column(
 		DateTime,
@@ -52,5 +56,18 @@ class User(BaseModel):
 		UserStatusHistory,
 		back_populates="user",
 		cascade="all, delete-orphan",
-		passive_deletes=True
+		passive_deletes=True,
+	)
+	sessions = relationship(
+		"Session",
+		back_populates="user",
+		cascade="all, delete-orphan",
+		passive_deletes=True,
+	)
+
+	devices = relationship(
+		"Device",
+		back_populates="user",
+		cascade="all, delete-orphan",
+		passive_deletes=True,
 	)

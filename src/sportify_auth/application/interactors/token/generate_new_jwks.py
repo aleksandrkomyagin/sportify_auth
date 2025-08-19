@@ -22,7 +22,9 @@ class GenerateNewJWKSInteractor:
 		except (BaseAppException, BaseInfraException) as e:
 			logger.error("Ошибка генерации JWKS: %s", e, exc_info=True)
 			raise JWKGenerationException(
-				status_code=e.status_code, message="Ошибка генерации JWKS", detail=str(e.message)
+				status_code=e.status_code,
+				message="Ошибка генерации JWKS",
+				detail=str(e.message),
 			) from e
 
 		return GenerateNewJWKSResponseSchema(message="Новый JWKS сгенерирован")

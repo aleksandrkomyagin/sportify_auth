@@ -4,17 +4,15 @@ from typing import Any, Protocol
 
 class ICacheService(Protocol):
 	@abstractmethod
-	async def set(
-		self, db_name: str, key: str, value: Any, expire: int | None = None
-	) -> None:
+	async def set(self, db_name: str, key: str, value: Any, expire: int | None = None) -> None:
 		pass
 
 	@abstractmethod
 	async def append(
-			self,
-			db_name: str,
-			key: str,
-			value: Any,
+		self,
+		db_name: str,
+		key: str,
+		value: Any,
 	) -> None:
 		pass
 

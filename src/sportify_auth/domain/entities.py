@@ -1,4 +1,5 @@
 import uuid
+
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from logging import getLogger
@@ -10,7 +11,6 @@ from sportify_auth.domain.exceptions.user import (
 	PhoneAlreadyExistsException,
 )
 from sportify_auth.domain.value_objects import IsActive, Phone, UserUUID
-
 
 logger = getLogger(__name__)
 
@@ -40,9 +40,7 @@ class User(Entity):
 		existing_user: Self | None,
 	) -> Self:
 		if existing_user:
-			raise PhoneAlreadyExistsException(
-				message="Пользователь с таким номером уже существует"
-			)
+			raise PhoneAlreadyExistsException(message="Пользователь с таким номером уже существует")
 
 		user = cls(
 			id=UserUUID(str(uuid.uuid4())),
@@ -53,9 +51,7 @@ class User(Entity):
 
 	def can_login(self) -> None:
 		if not self.is_active.value:
-			raise InactiveUserException(
-				message="Сначала нужно активировать профиль"
-			)
+			raise InactiveUserException(message="Сначала нужно активировать профиль")
 
 	def activate(self) -> Self:
 		return replace(

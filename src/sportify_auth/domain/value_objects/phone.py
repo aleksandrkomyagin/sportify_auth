@@ -1,8 +1,12 @@
 import re
+
 from dataclasses import dataclass
 
 from sportify_auth.domain.common.value_objects.base import ValueObject
-from sportify_auth.domain.exceptions.user import EmptyExceptionBase, InvalidFormatException
+from sportify_auth.domain.exceptions.user import (
+	EmptyExceptionBase,
+	InvalidFormatException,
+)
 
 PHONE_REGEX = re.compile(r"^7\d{10}$")
 

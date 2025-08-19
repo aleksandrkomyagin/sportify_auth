@@ -14,10 +14,10 @@ logger = getLogger(__name__)
 
 class UserDeactivateInteractor:
 	def __init__(
-			self,
-			user_service: IUserService,
-			outbox_service: IOutboxService,
-			tm: ITransactionManager
+		self,
+		user_service: IUserService,
+		outbox_service: IOutboxService,
+		tm: ITransactionManager,
 	):
 		self._user_service = user_service
 		self._outbox_service = outbox_service

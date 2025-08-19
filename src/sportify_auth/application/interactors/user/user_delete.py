@@ -13,10 +13,10 @@ logger = getLogger(__name__)
 
 class UserDeleteInteractor:
 	def __init__(
-			self,
-			user_service: IUserService,
-			outbox_service: IOutboxService,
-			tm: ITransactionManager
+		self,
+		user_service: IUserService,
+		outbox_service: IOutboxService,
+		tm: ITransactionManager,
 	):
 		self._user_service = user_service
 		self._outbox_service = outbox_service
@@ -33,6 +33,6 @@ class UserDeleteInteractor:
 			raise UserDeleteException(
 				status_code=e.status_code,
 				message="Ошибка удаления пользователя",
-				detail=str(e.message)
+				detail=str(e.message),
 			) from e
 		logger.info("Успешный запрос на удаление пользователя. UserId: %s", user_id)

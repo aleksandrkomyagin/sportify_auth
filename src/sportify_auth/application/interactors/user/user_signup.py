@@ -13,17 +13,11 @@ logger = getLogger(__name__)
 
 
 class UserSignUpInteractor:
-	def __init__(
-		self,
-		user_service: IUserService,
-		tm: ITransactionManager
-	):
+	def __init__(self, user_service: IUserService, tm: ITransactionManager):
 		self._user_service = user_service
 		self._tm = tm
 
-	async def __call__(
-		self, request_data: UserSignUpRequestSchema
-	) -> UserSignUpResponseSchema:
+	async def __call__(self, request_data: UserSignUpRequestSchema) -> UserSignUpResponseSchema:
 		logger.info("Новый запрос на регистрацию")
 		try:
 			async with self._tm as tm:

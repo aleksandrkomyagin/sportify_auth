@@ -5,54 +5,76 @@ from ..validator import ValidatedDataClass
 
 @dataclass
 class BaseModelWithCode(ValidatedDataClass):
-    code: str
+	code: str
 
 
 @dataclass
 class BaseModelWithPhone(ValidatedDataClass):
-    phone: str
+	phone: str
 
 
 @dataclass
 class BaseModelWithUserID(ValidatedDataClass):
-    user_id: str
+	user_id: str
+
+
+@dataclass
+class ConfirmData(BaseModelWithCode, BaseModelWithPhone):
+	pass
+
+
+@dataclass
+class DeviceInfo:
+	device_id: str
+	device_type: str
+	device_name: str
+	os_version: str
+	push_token: str
 
 
 @dataclass
 class UserSignUpRequestSchema(BaseModelWithPhone):
-    pass
+	pass
 
 
 @dataclass
-class UserSignUpConfirmRequestSchema(BaseModelWithCode, BaseModelWithPhone):
-    pass
+class UserSignUpConfirmRequestSchema:
+	signup_confirm_data: ConfirmData
+	device_info: DeviceInfo
 
 
 @dataclass
 class UserSignInRequestSchema(BaseModelWithPhone):
-    pass
+	pass
 
 
 @dataclass
-class UserSignInConfirmRequestSchema(BaseModelWithCode, BaseModelWithPhone):
-    pass
+class UserSignInConfirmRequestSchema:
+	signin_confirm_data: ConfirmData
+	device_info: DeviceInfo
+
+
+@dataclass
+class UserSignOutRequestSchema(BaseModelWithUserID):
+	session_ids: list[str]
+	delete_devices: bool
 
 
 @dataclass
 class UserDeleteRequestSchema(BaseModelWithUserID):
-    pass
+	pass
 
 
 @dataclass
 class UserActivateRequestSchema(BaseModelWithPhone):
-    pass
+	pass
 
 
 @dataclass
 class UserActivateConfirmRequestSchema(BaseModelWithCode, BaseModelWithPhone):
-    pass
+	pass
 
 
 @dataclass
 class UserDeactivateRequestSchema(BaseModelWithUserID):
-    pass
+	pass

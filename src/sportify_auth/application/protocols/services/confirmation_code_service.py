@@ -8,7 +8,5 @@ class IConfirmationCodeService(Protocol):
 		pass
 
 	@abstractmethod
-	async def validate_code(
-		self, key_prefix: str, phone: str, expected_code: str
-	) -> None:
+	async def validate_code(self, key_prefix: str, phone: str, expected_code: str) -> None:
 		pass

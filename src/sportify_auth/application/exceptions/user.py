@@ -1,4 +1,7 @@
-from sportify_auth.application.common.exceptions.base import BaseAppException, BaseDetailException
+from sportify_auth.application.common.exceptions.base import (
+	BaseAppException,
+	BaseDetailException,
+)
 
 
 class UserNotFoundException(BaseAppException):
@@ -38,4 +41,8 @@ class UserDeactivationException(BaseDetailException):
 
 
 class UserDeleteException(BaseDetailException):
+	pass
+
+
+class UserSignOutException(BaseDetailException):
 	pass
