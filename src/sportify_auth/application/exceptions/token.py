@@ -1,4 +1,7 @@
-from sportify_auth.application.common.exceptions.base import BaseAppException, BaseDetailException
+from sportify_auth.application.common.exceptions.base import (
+	BaseAppException,
+	BaseDetailException,
+)
 
 
 class TokenExpiredException(BaseAppException):

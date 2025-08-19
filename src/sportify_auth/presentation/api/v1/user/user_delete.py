@@ -2,9 +2,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
+from sportify_auth.application.interactors.user import UserDeleteInteractor
 from sportify_auth.application.providers.stub import Stub
 from sportify_auth.application.schemas.requests import UserDeleteRequestSchema
-from sportify_auth.application.interactors.user import UserDeleteInteractor
 from sportify_auth.presentation.auth import authenticate
 
 delete_router = APIRouter(dependencies=[Depends(authenticate)])

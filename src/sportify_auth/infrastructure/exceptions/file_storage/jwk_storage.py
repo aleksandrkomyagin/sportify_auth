@@ -2,4 +2,4 @@ from sportify_auth.infrastructure.common.exceptions.base import BaseInfraExcepti
 
 
 class StorageException(BaseInfraException):
-    status_code: int = 500
+	status_code: int = 500

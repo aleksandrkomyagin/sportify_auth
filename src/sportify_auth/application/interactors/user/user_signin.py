@@ -15,9 +15,7 @@ class UserSignInInteractor:
 	def __init__(self, user_service: IUserService):
 		self._user_service = user_service
 
-	async def __call__(
-		self, request_data: UserSignInRequestSchema
-	) -> UserSignInResponseSchema:
+	async def __call__(self, request_data: UserSignInRequestSchema) -> UserSignInResponseSchema:
 		logger.info("Новый запрос на аутентификацию")
 		try:
 			user_id = await self._user_service.signin(request_data)

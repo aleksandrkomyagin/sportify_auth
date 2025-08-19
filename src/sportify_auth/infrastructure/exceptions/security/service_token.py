@@ -2,16 +2,16 @@ from sportify_auth.infrastructure.common.exceptions.base import BaseServiceAuthE
 
 
 class TokenRequiredException(BaseServiceAuthException):
-    status_code = 401
+	status_code = 401
 
 
 class BearerSchemaRequiredException(BaseServiceAuthException):
-    status_code = 401
+	status_code = 401
 
 
 class InvalidTokenException(BaseServiceAuthException):
-    status_code = 403
+	status_code = 403
 
 
 class TokenExpiredException(BaseServiceAuthException):
-    status_code = 401
+	status_code = 401

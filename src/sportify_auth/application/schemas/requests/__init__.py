@@ -6,6 +6,7 @@ from .user import (
 	UserDeleteRequestSchema,
 	UserSignInConfirmRequestSchema,
 	UserSignInRequestSchema,
+	UserSignOutRequestSchema,
 	UserSignUpConfirmRequestSchema,
 	UserSignUpRequestSchema,
 )
@@ -13,12 +14,13 @@ from .user import (
 __all__ = (
 	"RefreshTokenRequestSchema",
 	"RevokeTokenRequestSchema",
+	"UserActivateRequestSchema",
+	"UserActivateConfirmRequestSchema",
+	"UserDeactivateRequestSchema",
 	"UserDeleteRequestSchema",
+	"UserSignOutRequestSchema",
 	"UserSignUpRequestSchema",
 	"UserSignUpConfirmRequestSchema",
 	"UserSignInRequestSchema",
 	"UserSignInConfirmRequestSchema",
-	"UserActivateRequestSchema",
-	"UserDeactivateRequestSchema",
-	"UserActivateConfirmRequestSchema",
 )

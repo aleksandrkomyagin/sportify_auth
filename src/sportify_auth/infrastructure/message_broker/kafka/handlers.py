@@ -1,7 +1,9 @@
 from logging import getLogger
 
 from sportify_auth.adapters.mappers.user_mapper import UserMapper
-from sportify_auth.application.protocols.repositories.user.user_repository import IUserRepository
+from sportify_auth.application.protocols.repositories.user.user_repository import (
+	IUserRepository,
+)
 
 from .consumer import get_consumer
 

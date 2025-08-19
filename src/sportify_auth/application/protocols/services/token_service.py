@@ -2,9 +2,9 @@ from abc import abstractmethod
 from typing import Protocol
 
 from sportify_auth.application.dto.event import NewOutboxEventDTO
-from sportify_auth.application.dto.token import TokenDTO
+from sportify_auth.application.dto.token import RefreshTokenRequest, TokenDTO
 from sportify_auth.application.dto.user import UserIdDTO
-from sportify_auth.application.schemas.requests import RefreshTokenRequestSchema, RevokeTokenRequestSchema
+from sportify_auth.application.schemas.requests import RevokeTokenRequestSchema
 
 
 class ITokenService(Protocol):
@@ -21,5 +21,5 @@ class ITokenService(Protocol):
 		pass
 
 	@abstractmethod
-	async def refresh_token(self, token_data: RefreshTokenRequestSchema) -> TokenDTO:
+	async def refresh_token(self, token_data: RefreshTokenRequest) -> TokenDTO:
 		pass

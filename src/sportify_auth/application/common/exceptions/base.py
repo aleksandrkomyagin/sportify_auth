@@ -16,6 +16,7 @@ class BaseAppException(Exception):
 @dataclass(eq=False)
 class BaseDetailException(BaseAppException):
 	"""Base Detail Exception."""
+
 	detail: str
 	status_code: int
 	response_data: dict[str, Any] = field(init=False)

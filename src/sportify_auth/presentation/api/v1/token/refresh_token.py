@@ -2,10 +2,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
+from sportify_auth.application.interactors.token import RefreshTokenInteractor
 from sportify_auth.application.providers.stub import Stub
 from sportify_auth.application.schemas.requests import RefreshTokenRequestSchema
 from sportify_auth.application.schemas.responses import RefreshTokenResponseSchema
-from sportify_auth.application.interactors.token import RefreshTokenInteractor
 
 refresh_router = APIRouter()
 

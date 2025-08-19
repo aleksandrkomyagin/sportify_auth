@@ -1,4 +1,5 @@
 import json
+
 from functools import lru_cache
 from logging import getLogger
 from typing import Any
@@ -31,14 +32,10 @@ class RedisCache(ICacheService):
 				self.instances[db_name] = Redis.from_pool(pool)
 			except RedisError as e:
 				logger.error("Ошибка получения инстанса: %s", str(e))
-				raise RedisConnectionException(
-					message="Ошибка получения инстанса"
-				) from e
+				raise RedisConnectionException(message="Ошибка получения инстанса") from e
 		return self.instances[db_name]
 
-	async def set(
-		self, db_name: str, key: str, value: Any, expire: int | None = None
-	) -> None:
+	async def set(self, db_name: str, key: str, value: Any, expire: int | None = None) -> None:
 		redis = self.get_instance(db_name)
 		try:
 			if not isinstance(value, str):
@@ -46,9 +43,7 @@ class RedisCache(ICacheService):
 			await redis.set(key, value, ex=expire)
 		except Exception as e:
 			logger.error("Ошибка записи: %s", str(e))
-			raise RedisOperationException(
-				message="Ошибка записи в редис"
-			) from e
+			raise RedisOperationException(message="Ошибка записи в редис") from e
 
 	async def append(
 		self,
@@ -65,9 +60,7 @@ class RedisCache(ICacheService):
 			await redis.set(key, value)
 		except Exception as e:
 			logger.error("Ошибка добавления по ключу: %s", str(e))
-			raise RedisOperationException(
-				message="Ошибка добавления по ключу в редис"
-			) from e
+			raise RedisOperationException(message="Ошибка добавления по ключу в редис") from e
 
 	async def get(self, db_name: str, key: str) -> Any | None:
 		redis = self.get_instance(db_name)
@@ -81,9 +74,7 @@ class RedisCache(ICacheService):
 			return None
 		except Exception as e:
 			logger.error("Ошибка чтения по ключу: %s", str(e))
-			raise RedisOperationException(
-				message="Ошибка чтения по ключу из редис"
-			) from e
+			raise RedisOperationException(message="Ошибка чтения по ключу из редис") from e
 
 	async def delete(self, db_name: str, key: str) -> None:
 		redis = self.get_instance(db_name)
@@ -91,9 +82,7 @@ class RedisCache(ICacheService):
 			await redis.delete(key)
 		except Exception as e:
 			logger.error("Ошибка удаления по ключу: %s", str(e))
-			raise RedisOperationException(
-				message="Ошибка удаления по ключу из редис"
-			) from e
+			raise RedisOperationException(message="Ошибка удаления по ключу из редис") from e
 
 	async def exists(self, db_name: str, key: str) -> bool:
 		redis = self.get_instance(db_name)
@@ -110,7 +99,6 @@ class RedisCache(ICacheService):
 	async def flush_db(self, db_name: str) -> None:
 		redis = self.get_instance(db_name)
 		await redis.flushdb()
-
 
 
 @lru_cache

@@ -1,4 +1,5 @@
 import sys
+
 from logging import getLogger
 
 from sportify_auth.setup.app_factory import init_app, run_app

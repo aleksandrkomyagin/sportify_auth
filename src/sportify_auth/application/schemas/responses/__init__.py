@@ -1,10 +1,15 @@
-from .token import GenerateNewJWKSResponseSchema, RefreshTokenResponseSchema, RevokeTokenResponseSchema
+from .token import (
+	GenerateNewJWKSResponseSchema,
+	RefreshTokenResponseSchema,
+	RevokeTokenResponseSchema,
+)
 from .user import (
 	UserActivateConfirmResponseSchema,
 	UserActivateResponseSchema,
 	UserDeactivateResponseSchema,
 	UserSignInConfirmResponseSchema,
 	UserSignInResponseSchema,
+	UserSignOutResponseSchema,
 	UserSignUpConfirmResponseSchema,
 	UserSignUpResponseSchema,
 )
@@ -16,6 +21,7 @@ __all__ = (
 	"UserActivateResponseSchema",
 	"UserActivateConfirmResponseSchema",
 	"UserDeactivateResponseSchema",
+	"UserSignOutResponseSchema",
 	"UserSignUpConfirmResponseSchema",
 	"UserSignUpResponseSchema",
 	"UserSignInResponseSchema",

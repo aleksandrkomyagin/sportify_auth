@@ -7,23 +7,19 @@ from sportify_auth.infrastructure.common.exceptions.base import BaseInfraExcepti
 
 
 class RevokeTokenInteractor:
-	def __init__(
-			self,
-			token_service: ITokenService,
-			outbox_service: IOutboxService
-	):
+	def __init__(self, token_service: ITokenService, outbox_service: IOutboxService):
 		self._token_service = token_service
 		self._outbox_service = outbox_service
 
-	async def __call__(
-		self, request_data: RevokeTokenRequestSchema
-	) -> RevokeTokenResponseSchema:
+	async def __call__(self, request_data: RevokeTokenRequestSchema) -> RevokeTokenResponseSchema:
 		try:
 			event = await self._token_service.revoke_token(request_data)
 			await self._outbox_service.save_event(event)
 		except (BaseAppException, BaseInfraException) as e:
 			raise TokenRevocationException(
-				status_code=e.status_code, message="Ошибка отзыва токена", detail=str(e.message)
+				status_code=e.status_code,
+				message="Ошибка отзыва токена",
+				detail=str(e.message),
 			) from e
 
 		return RevokeTokenResponseSchema(message="Токен отозван")

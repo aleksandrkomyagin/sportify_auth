@@ -1,4 +1,5 @@
 import uuid
+
 from datetime import datetime, timedelta
 from logging import getLogger
 from typing import Any
@@ -6,7 +7,7 @@ from typing import Any
 import jwt
 
 from sportify_auth.application.dto.event import NewOutboxEventDTO
-from sportify_auth.application.dto.token import TokenDTO
+from sportify_auth.application.dto.token import RefreshTokenRequest, TokenDTO, TokenData
 from sportify_auth.application.dto.user import UserIdDTO
 from sportify_auth.application.exceptions.token import (
 	InvalidTokenException,
@@ -24,7 +25,7 @@ from sportify_auth.application.protocols.cache import ICacheService
 from sportify_auth.application.protocols.file_storages.base import IJWKStorage
 from sportify_auth.application.protocols.key_generator.base import IKeyGenerator
 from sportify_auth.application.protocols.services import ITokenService
-from sportify_auth.application.schemas.requests import RefreshTokenRequestSchema, RevokeTokenRequestSchema
+from sportify_auth.application.schemas.requests import RevokeTokenRequestSchema
 from sportify_auth.setup.config import settings
 
 logger = getLogger(__name__)
@@ -32,10 +33,10 @@ logger = getLogger(__name__)
 
 class TokenService(ITokenService):
 	def __init__(
-			self,
-			cache_service: ICacheService,
-			file_storage: IJWKStorage,
-			rsa_key_generator: IKeyGenerator
+		self,
+		cache_service: ICacheService,
+		file_storage: IJWKStorage,
+		rsa_key_generator: IKeyGenerator,
 	) -> None:
 		self._cache = cache_service
 		self._file_storage = file_storage
@@ -111,7 +112,7 @@ class TokenService(ITokenService):
 
 		return payload
 
-	async def _make_token(self, user_id: str) -> dict[str, str]:
+	async def _make_token(self, user_id: str) -> dict[str, TokenData]:
 		current_rsa_key = await self._get_current_rsa_key()
 		if not current_rsa_key:
 			raise RSAKeyNotFoundException(message="Ключ RSA не создан")
@@ -133,7 +134,10 @@ class TokenService(ITokenService):
 			)
 		except jwt.PyJWTError as e:
 			raise MakeTokenException(message="Ошибка создания токена") from e
-		return {"access_token": access_token, "refresh_token": refresh_token}
+		return {
+			"access_token": TokenData(token=access_token, expires_at=access_token_expire),
+			"refresh_token": TokenData(token=refresh_token, expires_at=refresh_token_expire),
+		}
 
 	async def generate_new_rsa_key(self) -> str:
 		"""
@@ -148,7 +152,7 @@ class TokenService(ITokenService):
 		new_jwk = {
 			"kid": kid,
 			"use": "sig",
-    		"alg": settings.token_config.algorithm,
+			"alg": settings.token_config.algorithm,
 			"n": rsa_key_data.n,
 			"e": rsa_key_data.e,
 			"public_key_pem": rsa_key_data.public_pem,
@@ -173,16 +177,14 @@ class TokenService(ITokenService):
 
 	async def create_token(self, user_id: UserIdDTO) -> TokenDTO:
 		token = await self._make_token(str(user_id.id))
-		return TokenDTO(
-			access_token=token["access_token"], refresh_token=token["refresh_token"]
-		)
+		return TokenDTO(access_token=token["access_token"], refresh_token=token["refresh_token"])
 
 	async def revoke_token(self, token_data: RevokeTokenRequestSchema) -> NewOutboxEventDTO:
 		payload = await self._decode_token(token_data.refresh_token)
 		exp_dt = datetime.fromtimestamp(payload["exp"])
 		await self._cache.set(
 			settings.redis.revoked_token_db,
-			f"revoked:{payload["jti"]}",
+			f"revoked:{payload['jti']}",
 			"1",
 			expire=int((exp_dt - datetime.now()).total_seconds()),
 		)
@@ -191,10 +193,8 @@ class TokenService(ITokenService):
 			payload={"jti": payload["jti"]},
 		)
 
-	async def refresh_token(self, token_data: RefreshTokenRequestSchema) -> TokenDTO:
+	async def refresh_token(self, token_data: RefreshTokenRequest) -> TokenDTO:
 		payload = await self._decode_token(token_data.refresh_token)
 		user_id = await self._validate_token_payload(payload)
 		token = await self._make_token(user_id)
-		return TokenDTO(
-			access_token=token["access_token"], refresh_token=token["refresh_token"]
-		)
+		return TokenDTO(access_token=token["access_token"], refresh_token=token["refresh_token"])

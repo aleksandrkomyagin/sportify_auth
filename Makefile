@@ -12,7 +12,9 @@ logs:
 
 lint:
 	@echo "Running ruff..."
-	ruff check src/
+	ruff check src/ --fix
+	ruff check src/ --select I --fix
+	ruff format src/
 
 test:
 	@echo "Running pytest..."

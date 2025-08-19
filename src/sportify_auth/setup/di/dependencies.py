@@ -4,22 +4,9 @@ from typing import Annotated, AsyncIterable
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
-from sportify_auth.application.protocols.cache import ICacheService
-from sportify_auth.application.protocols.file_storages.base import IJWKStorage
-from sportify_auth.application.protocols.key_generator.base import IKeyGenerator
-from sportify_auth.application.protocols.message_broker import IMessageProducer
-from sportify_auth.application.protocols.repositories import ITransactionManager, IUserRepository
-from sportify_auth.application.protocols.repositories.outbox_event.outbox_repository import IOutboxRepository
-from sportify_auth.application.protocols.services import (
-	IConfirmationCodeService,
-	IOutboxService, ITokenService,
-	IUserService,
-)
-from sportify_auth.application.protocols.task_manager.base import ITaskManager
-from sportify_auth.application.providers.stub import Stub
-from sportify_auth.application.services import ConfirmationCodeService, TokenService, UserService
 from sportify_auth.application.interactors.token import (
-	GenerateNewJWKSInteractor, RefreshTokenInteractor,
+	GenerateNewJWKSInteractor,
+	RefreshTokenInteractor,
 	RevokeTokenInteractor,
 )
 from sportify_auth.application.interactors.user import (
@@ -29,22 +16,66 @@ from sportify_auth.application.interactors.user import (
 	UserDeleteInteractor,
 	UserSignInConfirmInteractor,
 	UserSignInInteractor,
+	UserSignOutInteractor,
 	UserSignUpConfirmInteractor,
 	UserSignUpInteractor,
 )
+from sportify_auth.application.protocols.cache import ICacheService
+from sportify_auth.application.protocols.file_storages.base import IJWKStorage
+from sportify_auth.application.protocols.key_generator.base import IKeyGenerator
+from sportify_auth.application.protocols.message_broker import IMessageProducer
+from sportify_auth.application.protocols.repositories import (
+	IOutboxRepository,
+	ISessionRepository,
+	ITransactionManager,
+	IUserRepository,
+)
+from sportify_auth.application.protocols.services import (
+	IConfirmationCodeService,
+	IOutboxService,
+	ISessionService,
+	ITokenService,
+	IUserService,
+)
+from sportify_auth.application.protocols.task_manager.base import ITaskManager
+from sportify_auth.application.providers.stub import Stub
+from sportify_auth.application.services import (
+	ConfirmationCodeService,
+	SessionService,
+	TokenService,
+	UserService,
+)
 from sportify_auth.application.services.outbox_service_impl import OutboxService
 from sportify_auth.infrastructure.cache.redis import RedisCache, get_redis
-from sportify_auth.infrastructure.crypto.rsa_key_generator import get_rsa_key_generator, RSAKeyGenerator
+from sportify_auth.infrastructure.crypto.rsa_key_generator import (
+	RSAKeyGenerator,
+	get_rsa_key_generator,
+)
 from sportify_auth.infrastructure.db.sqlalchemy.db_helper import (
 	create_async_session_factory,
-	create_engine
+	create_engine,
 )
-from sportify_auth.infrastructure.db.sqlalchemy.repositories import SQLAlchemyOutboxRepository, SQLAlchemyUserRepository
-from sportify_auth.infrastructure.db.sqlalchemy.transaction_manager import SqlalchemyTransactionManager
-from sportify_auth.infrastructure.file_storage.jwk_storage import get_jwk_storage, JWKStorage
-from sportify_auth.infrastructure.message_broker.kafka import KafkaMessageProducer, get_producer
+from sportify_auth.infrastructure.db.sqlalchemy.repositories import (
+	SQLAlchemyOutboxRepository,
+	SQLAlchemySessionRepository,
+	SQLAlchemyUserRepository,
+)
+from sportify_auth.infrastructure.db.sqlalchemy.transaction_manager import (
+	SqlalchemyTransactionManager,
+)
+from sportify_auth.infrastructure.file_storage.jwk_storage import (
+	JWKStorage,
+	get_jwk_storage,
+)
+from sportify_auth.infrastructure.message_broker.kafka import (
+	KafkaMessageProducer,
+	get_producer,
+)
 from sportify_auth.infrastructure.security.auth import AuthenticateService
-from sportify_auth.infrastructure.task_manager.task_iq.factory import get_task_manager, TaskManager
+from sportify_auth.infrastructure.task_manager.task_iq.factory import (
+	TaskManager,
+	get_task_manager,
+)
 
 
 def new_engine():
@@ -78,6 +109,12 @@ def new_outbox_repository(
 	session: Annotated[AsyncSession, Depends(Stub(AsyncSession))],
 ) -> SQLAlchemyOutboxRepository:
 	return SQLAlchemyOutboxRepository(session)
+
+
+def new_session_repository(
+	session: Annotated[AsyncSession, Depends(Stub(AsyncSession))],
+) -> SQLAlchemySessionRepository:
+	return SQLAlchemySessionRepository(session)
 
 
 def new_transaction_manager(
@@ -114,9 +151,7 @@ def new_user_service(
 	confirmation_code_service: Annotated[IConfirmationCodeService, Depends()],
 	producer: Annotated[IMessageProducer, Depends()],
 ) -> UserService:
-	return UserService(
-		user_repository, cache_service, confirmation_code_service, producer
-	)
+	return UserService(user_repository, cache_service, confirmation_code_service, producer)
 
 
 def new_outbox_service(
@@ -131,6 +166,12 @@ def new_token_service(
 	rsa_key_generator: Annotated[IKeyGenerator, Depends()],
 ) -> TokenService:
 	return TokenService(cache_service, file_storage, rsa_key_generator)
+
+
+def new_session_service(
+	session_repository: Annotated[ISessionRepository, Depends()],
+) -> SessionService:
+	return SessionService(session_repository)
 
 
 def new_task_manager() -> TaskManager:
@@ -153,9 +194,14 @@ def new_user_signin_interactor(
 
 def new_user_signin_confirm_interactor(
 	user_service: Annotated[IUserService, Depends()],
+	outbox_service: Annotated[IOutboxService, Depends()],
 	token_service: Annotated[ITokenService, Depends()],
+	session_service: Annotated[ISessionService, Depends()],
+	tm: Annotated[ITransactionManager, Depends()],
 ) -> UserSignInConfirmInteractor:
-	return UserSignInConfirmInteractor(user_service, token_service)
+	return UserSignInConfirmInteractor(
+		user_service, outbox_service, token_service, session_service, tm
+	)
 
 
 def new_user_signup_interactor(
@@ -168,10 +214,13 @@ def new_user_signup_interactor(
 def new_user_signup_confirm_interactor(
 	user_service: Annotated[IUserService, Depends()],
 	outbox_service: Annotated[IOutboxService, Depends()],
+	session_service: Annotated[ISessionService, Depends()],
 	token_service: Annotated[ITokenService, Depends()],
 	tm: Annotated[ITransactionManager, Depends()],
 ) -> UserSignUpConfirmInteractor:
-	return UserSignUpConfirmInteractor(user_service, outbox_service, token_service, tm)
+	return UserSignUpConfirmInteractor(
+		user_service, outbox_service, session_service, token_service, tm
+	)
 
 
 def new_user_activate_interactor(
@@ -196,10 +245,21 @@ def new_user_deactivate_interactor(
 	return UserDeactivateInteractor(user_service, outbox_service, tm)
 
 
+def new_user_sign_out_interactor(
+	session_service: Annotated[ISessionService, Depends()],
+	outbox_service: Annotated[IOutboxService, Depends()],
+	tm: Annotated[ITransactionManager, Depends()],
+) -> UserSignOutInteractor:
+	return UserSignOutInteractor(session_service, outbox_service, tm)
+
+
 def new_refresh_token_interactor(
+	outbox_service: Annotated[IOutboxService, Depends()],
 	token_service: Annotated[ITokenService, Depends()],
+	session_service: Annotated[ISessionService, Depends()],
+	tm: Annotated[ITransactionManager, Depends()],
 ) -> RefreshTokenInteractor:
-	return RefreshTokenInteractor(token_service)
+	return RefreshTokenInteractor(outbox_service, token_service, session_service, tm)
 
 
 def new_revoke_token_interactor(

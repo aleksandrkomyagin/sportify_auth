@@ -18,7 +18,7 @@ def get_log_config():
 			},
 			"json": {
 				"()": "sportify_auth.setup.logger.JsonFormatter",
-			}
+			},
 		},
 		"handlers": {
 			"default": {
@@ -32,13 +32,13 @@ def get_log_config():
 				"formatter": "json",
 				"class": "sportify_auth.setup.logger.JSONHandler",
 				"filters": ["request_id_filter"],
-			}
+			},
 		},
 		"loggers": {
 			"gunicorn.error": {
 				"handlers": ["default"],
 				"level": settings.api_config.log_level.upper(),
-				"propagate": False
+				"propagate": False,
 			},
 			"gunicorn.access": {
 				"handlers": ["default"],
@@ -46,8 +46,5 @@ def get_log_config():
 				"propagate": False,
 			},
 		},
-		"root": {
-			"level": settings.api_config.log_level.upper(),
-			"handlers": handlers
-		},
+		"root": {"level": settings.api_config.log_level.upper(), "handlers": handlers},
 	}

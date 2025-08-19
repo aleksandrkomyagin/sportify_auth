@@ -18,9 +18,7 @@ class UserActivateInteractor:
 	):
 		self._user_service = user_service
 
-	async def __call__(
-		self, request_data: UserActivateRequestSchema
-	) -> UserActivateResponseSchema:
+	async def __call__(self, request_data: UserActivateRequestSchema) -> UserActivateResponseSchema:
 		logger.info("Новый запрос на активацию пользователя")
 		try:
 			user_id = await self._user_service.user_activate(request_data)

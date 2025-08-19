@@ -5,45 +5,50 @@ from ..validator import ValidatedDataClass
 
 @dataclass
 class BaseMessageResponse(ValidatedDataClass):
-    message: str
+	message: str
 
 
 @dataclass
 class BaseTokenDataResponse(ValidatedDataClass):
-    access_token: str
-    refresh_token: str
+	access_token: str
+	refresh_token: str
 
 
 @dataclass
 class UserSignUpResponseSchema(BaseMessageResponse):
-    pass
+	pass
 
 
 @dataclass
 class UserSignUpConfirmResponseSchema(BaseTokenDataResponse):
-    pass
+	pass
 
 
 @dataclass
 class UserSignInResponseSchema(BaseMessageResponse):
-    pass
+	pass
 
 
 @dataclass
 class UserSignInConfirmResponseSchema(BaseTokenDataResponse):
-    pass
+	pass
 
 
 @dataclass
 class UserActivateResponseSchema(BaseMessageResponse):
-    pass
+	pass
 
 
 @dataclass
 class UserActivateConfirmResponseSchema(BaseMessageResponse):
-    pass
+	pass
 
 
 @dataclass
 class UserDeactivateResponseSchema(BaseMessageResponse):
-    pass
+	pass
+
+
+@dataclass
+class UserSignOutResponseSchema(BaseMessageResponse):
+	pass

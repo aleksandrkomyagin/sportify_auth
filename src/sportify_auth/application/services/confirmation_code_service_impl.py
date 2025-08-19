@@ -21,9 +21,7 @@ class ConfirmationCodeService(IConfirmationCodeService):
 		await self._cache.set(settings.redis.code_db, f"{key_prefix}:{phone}", code, 300)
 		return code
 
-	async def validate_code(
-		self, key_prefix: str, phone: str, expected_code: str
-	) -> None:
+	async def validate_code(self, key_prefix: str, phone: str, expected_code: str) -> None:
 		code = await self._cache.get(settings.redis.code_db, f"{key_prefix}:{phone}")
 		if code is None:
 			raise ConfirmationCodeHasExpiredException(
