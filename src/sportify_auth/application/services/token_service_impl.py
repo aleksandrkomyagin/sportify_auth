@@ -197,4 +197,11 @@ class TokenService(ITokenService):
 		payload = await self._decode_token(token_data.refresh_token)
 		user_id = await self._validate_token_payload(payload)
 		token = await self._make_token(user_id)
+		exp_dt = datetime.fromtimestamp(payload["exp"])
+		await self._cache.set(
+			settings.redis.revoked_token_db,
+			f"revoked:{payload['jti']}",
+			"1",
+			expire=int((exp_dt - datetime.now()).total_seconds()),
+		)
 		return TokenDTO(access_token=token["access_token"], refresh_token=token["refresh_token"])
