@@ -137,7 +137,7 @@ class UserService(IUserService):
 			settings.redis.user_db,
 			f"signup:user:{user.phone.value}",
 			UserMapper.to_cache(user),
-			6000,
+			60,
 		)
 		await self._send_confirmation_code("signup:code", user.phone.value)
 

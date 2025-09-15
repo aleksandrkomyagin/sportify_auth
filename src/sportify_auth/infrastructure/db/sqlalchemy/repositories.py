@@ -1,7 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from logging import getLogger
 
-from sqlalchemy import and_, delete, insert, or_, select, update
+from sqlalchemy import and_, delete, func, insert, or_, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,6 +37,7 @@ from sportify_auth.infrastructure.db.sqlalchemy.models import (
 	OutboxEvent,
 	Session,
 	SessionEventLog,
+	UserDevice,
 	UserModel,
 	UserStatusHistory,
 )
@@ -87,8 +88,29 @@ class SQLAlchemyUserRepository(IUserRepository):
 
 	@db_operation
 	async def delete_user(self, user_id: str) -> None:
-		stmt = delete(UserModel).where(UserModel.id == user_id)
-		await self.session.execute(stmt)
+		current_device_ids_before_deleting_result = await self.session.execute(
+			select(UserDevice.device_id).where(UserDevice.user_id == user_id)
+		)
+		await self.session.execute(delete(UserModel).where(UserModel.id == user_id))
+		current_device_ids_before_deleting = current_device_ids_before_deleting_result.scalars().all()
+		count_stmt = (
+			select(UserDevice.device_id)
+			.where(UserDevice.device_id.in_(current_device_ids_before_deleting))
+			.group_by(UserDevice.device_id)
+		)
+		current_device_ids_after_deleting_result = await self.session.execute(count_stmt)
+		devices_with_users = {row for row in current_device_ids_after_deleting_result.scalars().all()}
+		devices_to_delete = list(set(current_device_ids_before_deleting) - devices_with_users)
+		if devices_to_delete:
+			stmt = (
+				update(Device)
+				.where(Device.id.in_(devices_to_delete))
+				.values(
+					is_deleted=True,
+					deleted_at=func.now(),
+				)
+			)
+			await self.session.execute(stmt)
 
 	@db_operation
 	async def update_user(
@@ -122,7 +144,7 @@ class SQLAlchemyOutboxRepository(IOutboxRepository):
 
 	@db_operation
 	async def get_events(self, limit: int = 100) -> list[OutboxEventDTO]:
-		timeout_threshold = datetime.now() - timedelta(minutes=2)
+		timeout_threshold = datetime.now(timezone.utc) - timedelta(minutes=2)
 		select_stmt = (
 			select(OutboxEvent)
 			.where(
@@ -148,7 +170,7 @@ class SQLAlchemyOutboxRepository(IOutboxRepository):
 				.where(OutboxEvent.id.in_(ids))
 				.values(
 					status="processing",
-					updated_at=datetime.now(),
+					updated_at=func.now(),
 				)
 				.returning(OutboxEvent)
 			)
@@ -175,7 +197,7 @@ class SQLAlchemyOutboxRepository(IOutboxRepository):
 			.where(OutboxEvent.id.in_(event_ids))
 			.values(
 				status=status,
-				updated_at=datetime.now(),
+				updated_at=func.now(),
 			)
 		)
 		async with self.session.begin():
@@ -221,21 +243,35 @@ class SQLAlchemySessionRepository(ISessionRepository):
 		stmt = delete(Session).where(Session.id.in_(session_ids)).returning(Session.device_id)
 		result = await self.session.execute(stmt)
 		device_ids = result.scalars().all()
+		deleted_device_ids = []
 
 		if delete_devices:
-			stmt = (
-				update(Device)
-				.where(Device.id.in_(device_ids))
-				.values(
-					is_deleted=True,
-					deleted_at=datetime.now(),
-				)
+			await self.session.execute(
+				delete(UserDevice).where(UserDevice.device_id.in_(device_ids))
 			)
-			await self.session.execute(stmt)
+			count_stmt = (
+				select(UserDevice.device_id)
+				.where(UserDevice.device_id.in_(device_ids))
+				.group_by(UserDevice.device_id)
+			)
+			result = await self.session.execute(count_stmt)
+			devices_with_users = {row for row in result.scalars().all()}
+			devices_to_delete = list(set(device_ids) - devices_with_users)
+			if devices_to_delete:
+				stmt = (
+					update(Device)
+					.where(Device.id.in_(devices_to_delete))
+					.values(
+						is_deleted=True,
+						deleted_at=func.now(),
+					)
+				)
+				await self.session.execute(stmt)
+				deleted_device_ids = devices_to_delete
 
 		return (
 			[SessionIdDTO(session_id) for session_id in session_ids],
-			[DeviceIdDTO(str(device_id)) for device_id in device_ids],
+			[DeviceIdDTO(str(device_id)) for device_id in deleted_device_ids],
 		)
 
 	@db_operation
@@ -251,6 +287,12 @@ class SQLAlchemySessionRepository(ISessionRepository):
 			os_version=device.os_version,
 			push_token=device.push_token,
 			created_at=device.created_at,
+		)
+
+	@db_operation
+	async def attach_device_to_user(self, device_id: str, user_id: str) -> None:
+		await self.session.execute(
+			insert(UserDevice).values(**{"user_id": user_id, "device_id": device_id})
 		)
 
 	@db_operation

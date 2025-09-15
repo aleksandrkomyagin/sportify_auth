@@ -1,7 +1,7 @@
 import uuid
 
 from dataclasses import dataclass, field, replace
-from datetime import datetime
+from datetime import datetime, timezone
 from logging import getLogger
 from typing import Literal, Self
 
@@ -45,7 +45,7 @@ class User(Entity):
 		user = cls(
 			id=UserUUID(str(uuid.uuid4())),
 			phone=Phone(phone),
-			created_at=datetime.now(),
+			created_at=datetime.now(timezone.utc),
 		)
 		return user
 
@@ -62,7 +62,7 @@ class User(Entity):
 				UserStatusHistory(
 					user_id=self.id,
 					status="activated",
-					timestamp=datetime.now(),
+					timestamp=datetime.now(timezone.utc),
 				),
 			],
 		)
@@ -76,7 +76,7 @@ class User(Entity):
 				UserStatusHistory(
 					user_id=self.id,
 					status="deactivated",
-					timestamp=datetime.now(),
+					timestamp=datetime.now(timezone.utc),
 				),
 			],
 		)

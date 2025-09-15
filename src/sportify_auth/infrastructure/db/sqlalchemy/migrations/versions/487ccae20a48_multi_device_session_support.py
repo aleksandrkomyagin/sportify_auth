@@ -67,7 +67,6 @@ def upgrade() -> None:
 		sa.Column("device_id", sa.UUID(), nullable=False),
 		sa.Column("refresh_token", sa.Text(), nullable=False),
 		sa.Column("expires_at", sa.DateTime(), nullable=False),
-		# sa.Column('is_active', sa.Boolean(), default=True, nullable=False),
 		sa.Column(
 			"last_activity",
 			sa.DateTime(),
@@ -82,8 +81,6 @@ def upgrade() -> None:
 	)
 	op.create_index(op.f("ix_sessions_device_id"), "sessions", ["device_id"], unique=False)
 	op.create_index(op.f("ix_sessions_user_id"), "sessions", ["user_id"], unique=False)
-	op.drop_constraint("users_id_key", "users", type_="unique")
-	op.drop_constraint("users_phone_key", "users", type_="unique")
 	op.create_index(op.f("ix_users_id"), "users", ["id"], unique=True)
 	op.create_index(op.f("ix_users_phone"), "users", ["phone"], unique=True)
 	# ### end Alembic commands ###
