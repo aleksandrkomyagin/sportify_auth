@@ -1,6 +1,6 @@
 import uuid
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from logging import getLogger
 from typing import Any
 
@@ -118,8 +118,8 @@ class TokenService(ITokenService):
 			raise RSAKeyNotFoundException(message="Ключ RSA не создан")
 		kid, private_pem = current_rsa_key
 		try:
-			access_token_expire = datetime.now() + timedelta(minutes=10)
-			refresh_token_expire = datetime.now() + timedelta(days=1)
+			access_token_expire = datetime.now(timezone.utc) + timedelta(minutes=10)
+			refresh_token_expire = datetime.now(timezone.utc) + timedelta(days=1)
 			access_token = jwt.encode(
 				payload=self._make_payload(user_id, access_token_expire, "access"),
 				key=private_pem,
@@ -186,7 +186,7 @@ class TokenService(ITokenService):
 			settings.redis.revoked_token_db,
 			f"revoked:{payload['jti']}",
 			"1",
-			expire=int((exp_dt - datetime.now()).total_seconds()),
+			expire=int((exp_dt - datetime.now(timezone.utc)).total_seconds()),
 		)
 		return NewOutboxEventDTO(
 			topic="revoke_token",
@@ -202,6 +202,6 @@ class TokenService(ITokenService):
 			settings.redis.revoked_token_db,
 			f"revoked:{payload['jti']}",
 			"1",
-			expire=int((exp_dt - datetime.now()).total_seconds()),
+			expire=int((exp_dt - datetime.now(timezone.utc)).total_seconds()),
 		)
 		return TokenDTO(access_token=token["access_token"], refresh_token=token["refresh_token"])

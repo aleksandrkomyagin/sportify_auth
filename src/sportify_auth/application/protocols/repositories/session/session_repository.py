@@ -30,6 +30,10 @@ class ISessionRepository(Protocol):
 		raise NotImplementedError
 
 	@abstractmethod
+	async def attach_device_to_user(self, device_id: str, user_id: str) -> None:
+		raise NotImplementedError
+
+	@abstractmethod
 	async def get_device_by_id(self, device_id: str) -> DeviceInfoDTO:
 		raise NotImplementedError
 

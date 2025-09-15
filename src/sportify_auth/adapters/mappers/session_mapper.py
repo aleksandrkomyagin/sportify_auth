@@ -25,10 +25,9 @@ class SessionMapper:
 		}
 
 	@staticmethod
-	def to_dict_device(device_info: DeviceInfoDTO, user_id: UserIdDTO) -> DeviceData:
+	def to_dict_device(device_info: DeviceInfoDTO) -> DeviceData:
 		return {
 			"id": str(device_info.id),
-			"user_id": str(user_id.id),
 			"device_type": device_info.device_type,
 			"device_name": device_info.device_name,
 			"os_version": device_info.os_version,

@@ -1,5 +1,5 @@
 from .outbox import EventStatus, OutboxEvent
-from .session import Device, Session, SessionEventLog
+from .session import Device, Session, SessionEventLog, UserDevice
 from .user import User as UserModel
 from .user import UserStatusHistory
 
@@ -9,6 +9,7 @@ __all__ = (
 	"OutboxEvent",
 	"Session",
 	"SessionEventLog",
+	"UserDevice",
 	"UserModel",
 	"UserStatusHistory",
 )

@@ -16,7 +16,11 @@ class Status(Enum):
 
 
 class UserStatusHistory(BaseModel):
-	id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+	id: Mapped[UUID] = mapped_column(
+		UUID(as_uuid=True),
+		primary_key=True,
+		default=uuid.uuid4
+	)
 	user_id: Mapped[UUID] = mapped_column(
 		UUID(as_uuid=True),
 		ForeignKey("users.id", ondelete="CASCADE"),
@@ -27,7 +31,7 @@ class UserStatusHistory(BaseModel):
 		nullable=False,
 	)
 	timestamp: Mapped[datetime] = mapped_column(
-		DateTime,
+		DateTime(timezone=True),
 		nullable=False,
 	)
 	user = relationship("User", back_populates="status_history")
@@ -48,7 +52,7 @@ class User(BaseModel):
 		index=True,
 	)
 	created_at: Mapped[datetime] = mapped_column(
-		DateTime,
+		DateTime(timezone=True),
 		nullable=False,
 	)
 	is_active: Mapped[bool] = mapped_column(Boolean, nullable=False)
@@ -64,10 +68,15 @@ class User(BaseModel):
 		cascade="all, delete-orphan",
 		passive_deletes=True,
 	)
-
-	devices = relationship(
-		"Device",
+	user_devices = relationship(
+		"UserDevice",
 		back_populates="user",
 		cascade="all, delete-orphan",
-		passive_deletes=True,
+		passive_deletes=True
+	)
+	devices = relationship(
+		"Device",
+		secondary="userdevices",
+		viewonly=True,
+		back_populates="users"
 	)

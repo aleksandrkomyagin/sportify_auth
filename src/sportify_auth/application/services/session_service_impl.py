@@ -30,9 +30,10 @@ class SessionService(ISessionService):
 		device = await self._session_repository.get_device_by_id(device_info.id)
 		if not device:
 			device = await self._session_repository.add_device(
-				SessionMapper.to_dict_device(device_info, user_id)
+				SessionMapper.to_dict_device(device_info)
 			)
 			new_device = True
+		await self._session_repository.attach_device_to_user(device.id, user_id.id)
 		session = await self._session_repository.upsert_session(
 			SessionMapper.to_dict_session(device, user_id, token)
 		)

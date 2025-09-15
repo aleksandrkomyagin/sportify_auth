@@ -11,7 +11,6 @@ class SessionData(TypedDict):
 
 class DeviceData(TypedDict):
 	id: str
-	user_id: str
 	device_type: str
 	device_name: str
 	os_version: str

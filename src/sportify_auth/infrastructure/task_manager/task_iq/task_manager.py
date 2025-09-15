@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from logging import getLogger
 
 from taskiq import TaskiqScheduler
@@ -32,5 +32,5 @@ class TaskManager(ITaskManager):
 		task = self.broker.local_task_registry.get(task_name)
 		if task is None:
 			return
-		eta = datetime.now() + timedelta(days=1)
+		eta = datetime.now(timezone.utc) + timedelta(days=1)
 		await task.schedule_by_time(self._source, eta, *args)
