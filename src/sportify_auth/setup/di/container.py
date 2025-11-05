@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
+from sportify_auth.application.interactors.session import SessionLastActivityUpdateInteractor
 from sportify_auth.application.interactors.token import (
 	GenerateNewJWKSInteractor,
 	RefreshTokenInteractor,
@@ -70,4 +71,5 @@ dependency_container[UserSignOutInteractor] = dependencies.new_user_sign_out_int
 dependency_container[GenerateNewJWKSInteractor] = dependencies.new_generate_jwks_interactor
 dependency_container[RefreshTokenInteractor] = dependencies.new_refresh_token_interactor
 dependency_container[RevokeTokenInteractor] = dependencies.new_revoke_token_interactor
+dependency_container[SessionLastActivityUpdateInteractor] = dependencies.new_last_activity_update_interactor
 dependency_container[IAuthenticateService] = dependencies.new_authentication_provider

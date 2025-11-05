@@ -1,3 +1,4 @@
+from .session import SessionLastActivityUpdateRequestSchema
 from .token import RefreshTokenRequestSchema, RevokeTokenRequestSchema
 from .user import (
 	UserActivateConfirmRequestSchema,
@@ -14,6 +15,7 @@ from .user import (
 __all__ = (
 	"RefreshTokenRequestSchema",
 	"RevokeTokenRequestSchema",
+	"SessionLastActivityUpdateRequestSchema",
 	"UserActivateRequestSchema",
 	"UserActivateConfirmRequestSchema",
 	"UserDeactivateRequestSchema",

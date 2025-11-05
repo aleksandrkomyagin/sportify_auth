@@ -237,6 +237,22 @@ class SQLAlchemySessionRepository(ISessionRepository):
 		)
 
 	@db_operation
+	async def update_last_activity(self, device_id: str) -> SessionDTO:
+		stmt = update(Session).where(Session.device_id == device_id).values(last_activity=func.now()).returning(Session)
+		result = await self.session.execute(stmt)
+		session = result.scalar_one()
+
+		return SessionDTO(
+			session_id=str(session.id),
+			user_id=str(session.user_id),
+			device_id=str(session.device_id),
+			refresh_token=session.refresh_token,
+			expires_at=session.expires_at,
+			last_activity=session.last_activity,
+			created_at=session.created_at,
+		)
+
+	@db_operation
 	async def delete_session(
 		self, session_ids: list[str], delete_devices: bool
 	) -> tuple[list[SessionIdDTO], list[DeviceIdDTO]]:

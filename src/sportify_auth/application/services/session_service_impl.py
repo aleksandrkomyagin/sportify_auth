@@ -3,14 +3,14 @@ from logging import getLogger
 from sportify_auth.adapters.mappers.session_mapper import SessionMapper
 from sportify_auth.application.dto.event import NewOutboxEventDTO
 from sportify_auth.application.dto.session import (
-	DeviceInfoDTO,
-	SessionDeleteDTO,
-	SessionIdDTO,
+	DeviceInfoDTO, SessionDeleteDTO,
+	SessionDTO, SessionIdDTO,
 )
 from sportify_auth.application.dto.token import TokenData
 from sportify_auth.application.dto.user import UserIdDTO
 from sportify_auth.application.protocols.repositories import ISessionRepository
 from sportify_auth.application.protocols.services import ISessionService
+from sportify_auth.application.schemas.requests import SessionLastActivityUpdateRequestSchema
 
 logger = getLogger(__name__)
 
@@ -93,3 +93,6 @@ class SessionService(ISessionService):
 				else [],
 			},
 		)
+
+	async def update_session(self, device_id: SessionLastActivityUpdateRequestSchema) -> SessionDTO:
+		return await self._session_repository.update_last_activity(device_id.device_id)

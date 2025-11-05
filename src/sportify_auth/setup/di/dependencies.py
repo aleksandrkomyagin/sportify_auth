@@ -4,6 +4,7 @@ from typing import Annotated, AsyncIterable
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
+from sportify_auth.application.interactors.session import SessionLastActivityUpdateInteractor
 from sportify_auth.application.interactors.token import (
 	GenerateNewJWKSInteractor,
 	RefreshTokenInteractor,
@@ -267,6 +268,12 @@ def new_revoke_token_interactor(
 	outbox_service: Annotated[IOutboxService, Depends()],
 ) -> RevokeTokenInteractor:
 	return RevokeTokenInteractor(token_service, outbox_service)
+
+
+def new_last_activity_update_interactor(
+	session_service: Annotated[ISessionService, Depends()],
+) -> SessionLastActivityUpdateInteractor:
+	return SessionLastActivityUpdateInteractor(session_service)
 
 
 def new_generate_jwks_interactor(

@@ -20,6 +20,10 @@ class ISessionRepository(Protocol):
 		raise NotImplementedError
 
 	@abstractmethod
+	async def update_last_activity(self, device_id: str) -> SessionDTO:
+		raise NotImplementedError
+
+	@abstractmethod
 	async def delete_session(
 		self, session_ids: list[str], delete_devices: bool
 	) -> tuple[list[SessionIdDTO], list[DeviceIdDTO]]:
